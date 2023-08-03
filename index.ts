@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import auth from './router/authentification';
 import { checker } from './router/authReqCheck';
+import { rateLimiterMiddleware } from './router/protection';
 dotenv.config();
 
 const app: Express = express();
@@ -9,7 +10,7 @@ const app: Express = express();
 const port = process.env.PORT;
 
 app.use(express.json());
-
+app.use(rateLimiterMiddleware);
 app.use("/auth", auth)
 
 app.use(checker)
