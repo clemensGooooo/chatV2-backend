@@ -20,10 +20,11 @@ export const checker = async (req: Request, res: Response, next: () => void) => 
         });
 
         if (!user) {
-            return res.sendStatus(400);
+            return res.sendStatus(401);
         }
+        req.username = user.name;
         next();
     } catch (err) {
-        return res.sendStatus(400);
+        return res.sendStatus(401);
     }
 }

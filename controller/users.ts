@@ -1,14 +1,15 @@
-import User from "./database";
+import mongoose from "mongoose";
+import { User } from "./database";
 
 
 export default class UserProvider {
     checkUsername = async (username: string): Promise<boolean> => {
         const existingUser = await User.findOne({ username: username });
 
-            if (existingUser) {
-                return true;
-            }
-            return false;
+        if (existingUser) {
+            return true;
+        }
+        return false;
     }
 
     createNewUser = async (username: string, hash: string, salt: string) => {
@@ -23,5 +24,14 @@ export default class UserProvider {
             return existingUser;
         }
         throw new Error('Password not available !');
+    }
+    checkAdmin = async (username: string) => {
+        const user = await User.findOne({ username: username });
+        if (user) {
+            if (user.admin == true) {
+                return true;
+            }
+        }
+        return false;
     }
 }

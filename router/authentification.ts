@@ -17,6 +17,9 @@ const peper_vals = "ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // al
 
 const auth = express.Router();
 
+auth.get("/",(req: Request,res: Response) => {
+    res.send(200);
+})
 
 auth.post("/register", async (req: Request, res: Response) => {
 

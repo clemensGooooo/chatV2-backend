@@ -10,7 +10,7 @@ export default class tokenProvider {
         const accessToken = jwt.sign(
             { name: username },
             token_secret,
-            { expiresIn: '1800s' });
+            { expiresIn: '30m' });
         return accessToken;
     }
 

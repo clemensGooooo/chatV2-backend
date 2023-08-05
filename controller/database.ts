@@ -18,9 +18,41 @@ const userSchema = new mongoose.Schema({
   salt: {
     type: String,
     required: true,
+  },
+  admin: {
+    type: Boolean,
+    required: false
   }
 });
 
-const User = mongoose.model('Users', userSchema);
 
-export default User;
+const messagesSchema = new mongoose.Schema(
+  {
+    message: {
+      type: String,
+      required: true
+    },
+    icon: {
+      type: String,
+      required: false
+    },
+    to: {
+      type: String,
+      required: false
+    },
+    readed: {
+      type: [String],
+      required: false
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+// const adminMessagesSchema = new mongoose.Schema({});
+
+const User = mongoose.model('Users', userSchema);
+const Messages = mongoose.model('Messages', messagesSchema);
+
+export { User, Messages };
