@@ -1,7 +1,8 @@
 node_modules
 dist
-launch.json
+.vscode
 .env
+
 upload/cache
 upload/profile
 !upload/profile/user.png
