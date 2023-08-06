@@ -6,7 +6,7 @@ import multer, { FileFilterCallback } from 'multer';
 import UserProvider from '../controller/users';
 import sharp from 'sharp';
 import fs from "fs"
-import { peper_vals } from './authentification';
+import { checkPassword, createPassword, peper_vals } from '../controller/password';
 import crypto from 'crypto';
 
 
@@ -93,37 +93,26 @@ user.post('/profile/image', upload.single('image'), async (req, res) => {
 });
 
 user.post('/password', async (req: Request, res: Response) => {
+
     if (req.body == undefined || req.username == undefined)
         return res.sendStatus(500);
 
-    const newPassword: string | false = req.body.newPassword || false;
+    const new_password: string | false = req.body.newPassword || false;
     const password: string | false = req.body.password || false;
 
-    // check if password & username is definded
-    if (newPassword == false || password == false)
+
+    if (new_password == false || password == false)
         return res.status(401);
 
-    const { hash, salt } = await Users.getCredentials(req.username);
+    const isloggedIn = await checkPassword(req.username, password);
 
-    const peperArray = peper_vals.split('');
+    if (isloggedIn == false) {
+        return res.sendStatus(401);
+    }
+    const { hash: new_hash, salt: new_salt } = createPassword(new_password);
 
-    const hashes = peperArray.map((char) => {
-
-        const current_hash = crypto.createHash('sha512')
-            .update(salt + password + char).digest("hex");
-
-        return current_hash;
-    });
-    var found = hashes.find((h) => h == hash)
-    if (found == undefined)
-        return res.status(401).send("Error");
-
-    const new_peper = peper_vals[Math.floor(Math.random() * peper_vals.length)];
-    const new_salt = require('crypto').randomBytes(15).toString('hex');
-
-    const new_hash = crypto.createHash('sha512')
-        .update(new_salt + newPassword + new_peper).digest("hex");
     await Users.updateProfile(req.username, { hash: new_hash, salt: new_salt })
+
     res.sendStatus(200);
 });
 
@@ -149,8 +138,6 @@ user.get("/news/all", async (req: Request, res: Response) => {
 
 user.get("/news/readed", async (req: Request, res: Response) => {
     const username: string | undefined = req.username;
-
-    console.log(username);
 
     if (username == undefined)
         return res.sendStatus(401);

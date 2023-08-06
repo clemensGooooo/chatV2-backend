@@ -40,3 +40,50 @@ If the token runs out of time you need a new token, you should send the old toke
 ```
 Answer should be the new token in the body, Status `200`.
 
+
+## User API
+
+### Profile - GET
+
+The API `/user/profile` will show you the profile.
+
+### Profile-Image - GET/POST
+The`/user/profile/image` will show you the profile-image.
+If you want to update the profile image use the `POST` method.
+The **field key** should be `image`.
+
+### Password - POST
+With this `/user/password` API you can update the password.
+You need to send the new password and the old password, so that your password get successful changed.
+```json
+{
+    "password":"[your-current-password]",
+    "newPassword":"[Your-new-passwd]"
+}
+```
+
+### News
+This is the API part to get the news.
+Use `/user/news` to get all not readed news. <br>
+Use `/user/news/all` to get all news ever sended to you. <br>
+Use `/user/news/readed` this will set all messages to readed. <br>
+
+## Admin API
+Only accessable by admins.
+
+Test if you are admin use `/admin` `GET`
+
+### Users - GET
+This will show you all users.
+API path: `/admin/users`
+
+### News - GET
+This will show all news, its not important who send them.
+<br>
+
+There are two params: `page`: [number], `pageSize` [number], because the API is dynamic.
+Test it for more info.
+
+### News - DELETE
+
+This `API` allows you to delete a news article.

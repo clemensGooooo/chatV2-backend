@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import crypto from 'crypto';
 import tokenProvider from '../controller/jwt'
 import UserProvider from '../controller/users';
+import { checkPassword, createPassword, peper_vals } from '../controller/password';
 
 const error = {
     "register": "There is an issue.. Try again!",
@@ -12,12 +13,11 @@ const error = {
 
 const tp = new tokenProvider();
 const up = new UserProvider();
-export const peper_vals = "ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // all letters as peppers
 
 
 const auth = express.Router();
 
-auth.get("/",(req: Request,res: Response) => {
+auth.get("/", (req: Request, res: Response) => {
     res.send(200);
 })
 
@@ -38,11 +38,7 @@ auth.post("/register", async (req: Request, res: Response) => {
     if (await up.checkUsername(username))
         return res.status(409).send(error.username);
 
-    const peper = peper_vals[Math.floor(Math.random() * peper_vals.length)];
-    const salt = require('crypto').randomBytes(15).toString('hex');
-
-    const hash = crypto.createHash('sha512')
-        .update(salt + password + peper).digest("hex");
+    const { hash, salt } = createPassword(password)
 
     await up.createNewUser(username, hash, salt);
 
@@ -67,21 +63,11 @@ auth.post("/login", async (req: Request, res: Response) => {
     if (await up.checkUsername(username) == false)
         return res.status(401).send(error.login);
 
-    const { hash, salt } = await up.getCredentials(username);
+    const isloggedIn = await checkPassword(username, password);
 
-    const peperArray = peper_vals.split('');
-
-    const hashes = peperArray.map((char) => {
-
-        const current_hash = crypto.createHash('sha512')
-            .update(salt + password + char).digest("hex");
-
-        return current_hash;
-    });
-    var found = hashes.find((h) => h == hash)
-    if (found == undefined)
-        return res.status(401).send(error.login);
-
+    if (isloggedIn == false) {
+        return res.sendStatus(401);
+    }
     // "Logged in"
     // send access token
     const access_token = tp.generate(username)
