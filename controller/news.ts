@@ -17,7 +17,7 @@ export default class NewsProvider {
         });
         await newMessage.save()
     }
-    read = async (username: string, admin = false) => {
+    read = async (username: string, admin = false, all = false) => {
         let query = {};
 
         if (!admin) {
@@ -27,19 +27,25 @@ export default class NewsProvider {
             };
         }
 
+        if (all) {
+            query = {
+                $or: [{ to: username }, { to: { $exists: false } }],
+            };
+        }
         const yourNews = await Messages.find(query);
         const editedNews = yourNews.map((msg) => {
             if (admin)
                 return {
                     message: msg.message,
                     updatedAt: msg.updatedAt,
+                    createdAt: msg.createdAt,
                     id: msg.id,
                     to: msg.to
                 }
             else
                 return {
                     message: msg.message,
-                    updatedAt: msg.updatedAt
+                    createdAt: msg.createdAt
                 }
         })
         return editedNews;
@@ -68,6 +74,18 @@ export default class NewsProvider {
             return true;
         } catch (err) {
             return false;
+        }
+    }
+    readPage = async (page: number, pageSize: number) => {
+        const startIndex = (page - 1) * pageSize;
+
+        const data = await Messages.find().skip(startIndex).limit(pageSize);
+
+        return {
+            currentPage: page,
+            pageSize: pageSize,
+            totalPages: Math.ceil(await Messages.countDocuments() / pageSize),
+            data: data,
         }
     }
 }

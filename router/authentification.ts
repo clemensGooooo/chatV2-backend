@@ -12,7 +12,7 @@ const error = {
 
 const tp = new tokenProvider();
 const up = new UserProvider();
-const peper_vals = "ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // all letters as peppers
+export const peper_vals = "ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // all letters as peppers
 
 
 const auth = express.Router();
@@ -36,7 +36,7 @@ auth.post("/register", async (req: Request, res: Response) => {
 
     // check if username exists => true if already there !
     if (await up.checkUsername(username))
-        return res.status(400).send(error.username);
+        return res.status(409).send(error.username);
 
     const peper = peper_vals[Math.floor(Math.random() * peper_vals.length)];
     const salt = require('crypto').randomBytes(15).toString('hex');

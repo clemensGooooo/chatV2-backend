@@ -22,7 +22,13 @@ const userSchema = new mongoose.Schema({
   admin: {
     type: Boolean,
     required: false
+  },
+  profileImage: {
+    type: String,
+    required: false
   }
+}, {
+  timestamps: true
 });
 
 

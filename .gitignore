@@ -2,3 +2,6 @@ node_modules
 dist
 launch.json
 .env
+upload/cache
+upload/profile
+!upload/profile/user.png
