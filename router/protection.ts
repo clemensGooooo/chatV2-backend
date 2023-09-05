@@ -3,7 +3,7 @@ import { RateLimiterMemory } from 'rate-limiter-flexible';
 
 // Create a rate limiter => 100 req per 60s
 const rateLimiter = new RateLimiterMemory({
-  points: 20,
+  points: 40,
   duration: 5,
 });
 

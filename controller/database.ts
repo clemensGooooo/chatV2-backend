@@ -56,9 +56,89 @@ const messagesSchema = new mongoose.Schema(
   }
 );
 
-// const adminMessagesSchema = new mongoose.Schema({});
+const ReadedTableSchema = new mongoose.Schema({
+  messageID: {
+    type: Number,
+    required: true
+  },
+  user: {
+    type: String,
+    required: true
+  },
+  timestamp: {
+    type: Date,
+    required: true
+  },
+  status: {
+    type: Number,
+    enum: [0, 1, 2],
+    required: true
+  },
+});
+
+const ChatMessagesSchema = new mongoose.Schema({
+  user: {
+    type: String,
+    required: true
+  },
+  message: {
+    type: String,
+    required: true
+  },
+  timestamp: {
+    type: Date,
+    required: true
+  },
+  chatID: {
+    type: Number,
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ["text", "image", "file"], required: true
+  },
+  description: {
+    type: String
+  },
+  to: {
+    type: String
+  },
+  readed: [ReadedTableSchema],
+});
+
+const ChatsSchema = new mongoose.Schema({
+  chatID: {
+    type: Number,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  image: {
+    type: String
+  },
+  members: [{
+    type: String,
+    required: true
+  }],
+  chatText: {
+    type: String,
+    required: true
+  },
+  changed: {
+    type: Date,
+    required: true
+  },
+  lastInteraction: {
+    type: Date,
+    required: true
+  }
+});
 
 const User = mongoose.model('Users', userSchema);
 const Messages = mongoose.model('Messages', messagesSchema);
+const ChatMessages = mongoose.model('Chat-Messages', ChatMessagesSchema);
+const Chats = mongoose.model('Chats-All', ChatsSchema);
 
-export { User, Messages };
+export { User, Messages, ChatMessages, Chats };
