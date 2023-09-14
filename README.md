@@ -87,3 +87,8 @@ Test it for more info.
 ### News - DELETE
 
 This `API` allows you to delete a news article.
+
+
+## The project
+
+This project is currently only in `beta`. More info in the frontend part!
