@@ -430,11 +430,12 @@ chat.post('/send', uploadMessage.single('file'), async (req: Request, res: Respo
     }
 });
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 20;
 
 chat.get('/getChatMessages', async (req, res) => {
     try {
         const { chatID, page } = req.query as { chatID: string; page: string };
+
         const username = req.username;
 
         if (!chatID || !username) {
@@ -458,6 +459,7 @@ chat.get('/getChatMessages', async (req, res) => {
             .sort({ timestamp: -1 })
             .skip(skipCount)
             .limit(PAGE_SIZE);
+
 
         const sanitizedMessages = chatMessages.map(message => {
             const sanitizedMessage = { ...message.toObject() };
