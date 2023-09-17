@@ -95,7 +95,7 @@ const ChatMessagesSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["text", "image", "file"], required: true
+    enum: ["text", "image", "file","info"], required: true
   },
   description: {
     type: String

@@ -5,8 +5,11 @@ import UserProvider from '../controller/users';
 import path from 'path';
 import fs from "fs"
 import sharp from 'sharp';
+import route from './messages';
+import { MessageProvider } from '../controller/chat/messages';
 const UserP = new UserProvider;
 
+const Messages = new MessageProvider();
 function generateRandomChatID() {
     return Math.floor(Math.random() * 10000000);
 }
@@ -16,7 +19,6 @@ async function isChatIDUnique(chatID: number) {
     return !chatExists;
 }
 
-const blackList: string[] = [];
 
 const chat = express.Router();
 
@@ -65,6 +67,8 @@ chat.post('/createChat', async (req, res) => {
         });
 
         await newChat.save();
+
+        Messages.newChat(chatID)
         return res.status(201).json({ id: newChat.chatID });
     } catch (error) {
         console.error(error);
@@ -247,6 +251,7 @@ chat.put('/editChatName', async (req, res) => {
 
         await existingChat.save();
 
+        await Messages.changeSettings(chatID,req.username, "name of the chat")
         return res.sendStatus(200);
     } catch (error) {
         console.error(error);
@@ -259,7 +264,7 @@ interface EditChatTextRequest {
     text: string
 }
 
-chat.put('/editChatText', async (req, res) => {
+chat.put('/editChatDescription', async (req, res) => {
     try {
         const { chatID, text }: EditChatTextRequest = req.body;
 
@@ -286,6 +291,7 @@ chat.put('/editChatText', async (req, res) => {
         existingChat.lastInteraction = new Date();
 
         await existingChat.save();
+        await Messages.changeSettings(chatID,req.username, "description")
 
         return res.sendStatus(200);
     } catch (error) {
@@ -352,129 +358,8 @@ chat.get('/getChats', async (req, res) => {
     }
 });
 
-interface MessageData {
-    chatID: number;
-    type: 'file' | 'image' | 'text';
-    message: string,
-    to?: string;
-}
 
-const storageMessage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'upload/chat');
-    },
-    filename: function (req, file, cb) {
-        const randomString = Math.random().toString(36).substring(7);
-        const filename = `${randomString}_${Date.now()}${path.extname(file.originalname)}`;
-        cb(null, filename);
-    }
-});
-
-const uploadMessage = multer({
-    storage: storageMessage,
-    limits: {
-        fileSize: 6 * 1024 * 1024
-    }
-});
-
-chat.post('/send', uploadMessage.single('file'), async (req: Request, res: Response) => {
-
-    try {
-        if (req.username === undefined) {
-            return res.sendStatus(400);
-        }
-
-        const { chatID, type, message, to }: MessageData = req.body;
-
-        if (!message || !chatID || !type || !['file', 'image', 'text'].includes(type)) {
-            return res.sendStatus(400);
-        }
-        if (type === "file" || type === "image") {
-            if (!req.file) {
-                return res.sendStatus(400);
-            }
-        }
-
-        if (req.file && type != "file" && req.file && type != "image") {
-            fs.unlinkSync(req.file.path);
-            return res.sendStatus(400);
-        }
-
-        let final_message = {
-            user: req.username,
-            message: message,
-            timestamp: new Date(),
-            chatID: chatID,
-            type: type,
-            to: to,
-            readed: [],
-            description: req.file ? req.file.filename : undefined
-        };
-
-        const existingChat = await Chats.findOne({ chatID });
-
-        if (!existingChat) {
-            return res.sendStatus(404);
-        }
-
-        existingChat.lastInteraction = new Date;
-
-        await existingChat.save();
-
-        let insertedMessage = await ChatMessages.create(final_message);
-        await insertedMessage.save();
-        res.sendStatus(200);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-const PAGE_SIZE = 20;
-
-chat.get('/getChatMessages', async (req, res) => {
-    try {
-        const { chatID, page } = req.query as { chatID: string; page: string };
-
-        const username = req.username;
-
-        if (!chatID || !username) {
-            return res.sendStatus(400);
-        }
-
-        const pageNumber = parseInt(page) || 1;
-        const skipCount = (pageNumber - 1) * PAGE_SIZE;
-
-        const existingChat = await Chats.findOne({ chatID });
-
-        if (!existingChat) {
-            return res.sendStatus(404);
-        }
-
-        if (!existingChat.members.includes(username)) {
-            return res.sendStatus(403);
-        }
-
-        const chatMessages = await ChatMessages.find({ chatID })
-            .sort({ timestamp: -1 })
-            .skip(skipCount)
-            .limit(PAGE_SIZE);
-
-
-        const sanitizedMessages = chatMessages.map(message => {
-            const sanitizedMessage = { ...message.toObject() };
-            if (sanitizedMessage.hasOwnProperty('description')) {
-                delete sanitizedMessage.description;
-            }
-            return sanitizedMessage;
-        });
-
-        return res.status(200).json(sanitizedMessages);
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
+chat.use("/messages",route)
 
 
 chat.get('/getImage/:messageId', async (req, res) => {

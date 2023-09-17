@@ -92,3 +92,9 @@ This `API` allows you to delete a news article.
 ## The project
 
 This project is currently only in `beta`. More info in the frontend part!
+
+## Chat API
+
+### New Chat
+
+This will generate a new chat with a random ID which does not exists, in addition to that the chat will get a start message!
