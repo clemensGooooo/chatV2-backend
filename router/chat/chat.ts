@@ -1,12 +1,12 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
-import { ChatMessages, Chats, User } from '../controller/database';
-import UserProvider from '../controller/users';
+import { ChatMessages, Chats, User } from '../../controller/database';
+import UserProvider from '../../controller/users';
 import path from 'path';
 import fs from "fs"
 import sharp from 'sharp';
 import route from './messages';
-import { MessageProvider } from '../controller/chat/messages';
+import { MessageProvider } from '../../controller/chat/messages';
 const UserP = new UserProvider;
 
 const Messages = new MessageProvider();

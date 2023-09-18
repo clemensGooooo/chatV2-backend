@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
-import { MessageProvider } from "../controller/chat/messages";
-import { ChatMessages, Chats } from "../controller/database";
+import { MessageProvider } from "../../controller/chat/messages";
+import { ChatMessages, Chats } from "../../controller/database";
 import multer from 'multer';
 import fs from "fs"
 import path from 'path';

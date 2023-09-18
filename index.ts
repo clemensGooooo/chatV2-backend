@@ -6,7 +6,7 @@ import { rateLimiterMiddleware } from './router/protection';
 import cors from 'cors';
 import admin from './router/admin';
 import user from './router/user';
-import chat from './router/chat';
+import chat from './router/chat/chat';
 
 dotenv.config();
 
