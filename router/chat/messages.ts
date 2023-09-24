@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { MessageProvider } from "../../controller/chat/messages";
 import { ChatMessages, Chats } from "../../controller/database";
 import multer from 'multer';
@@ -74,26 +74,44 @@ const uploadMessage = multer({
 });
 
 
-route.post('/send', uploadMessage.single('file'), async (req: Request, res: Response) => {
+const checkType = (req: Request, res: Response, next: NextFunction) => {
+
+    req.type = "text";
+
+    const imageTypes = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+    if (req.file) {
+        req.type = "file";
+        const fileExtension = path.extname(req.file.originalname);
+
+        if (imageTypes.includes(fileExtension)) {
+            req.type = "image";
+
+        }
+    }
+    next();
+}
+
+route.post('/send', uploadMessage.single('file'), checkType, async (req: Request, res: Response) => {
 
     try {
         if (req.username === undefined) {
             return res.sendStatus(400);
         }
 
-        const { chatID, type, message, to }: MessageData = req.body;
-
-        if (!message || !chatID || !type || !['file', 'image', 'text'].includes(type)) {
+        const { chatID, message, to }: MessageData = req.body;
+        const type = req.type;
+        
+        if (message == undefined || !chatID) {
             return res.sendStatus(400);
         }
-        if (type === "file" || type === "image") {
-            if (!req.file) {
-                return res.sendStatus(400);
-            }
+        
+        
+        if (req.file && type != "file" && type != "image") {
+            fs.unlinkSync(req.file.path);
+            return res.sendStatus(400);
         }
 
-        if (req.file && type != "file" && req.file && type != "image") {
-            fs.unlinkSync(req.file.path);
+        if ((message == "" && req.file) == false) {
             return res.sendStatus(400);
         }
 
@@ -101,13 +119,15 @@ route.post('/send', uploadMessage.single('file'), async (req: Request, res: Resp
             user: req.username,
             message: message,
             timestamp: new Date(),
-            chatID: chatID,
+            chatID: Number(chatID),
             type: type,
             to: to,
             readed: [],
             description: req.file ? req.file.filename : undefined
         };
 
+        console.log(final_message);
+        
         const existingChat = await Chats.findOne({ chatID });
 
         if (!existingChat) {
